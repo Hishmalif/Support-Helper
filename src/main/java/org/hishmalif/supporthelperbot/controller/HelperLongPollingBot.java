@@ -43,9 +43,10 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
             case Commands.CHAT:
                 System.out.println(4);
             case Commands.ABOUT:
-                System.out.println(5);
+                sendMessage(chatId, Answers.ABOUT.getValue());
                 break;
         }
+        System.out.println(update.getMessage().getText());
     }
 
     public void sendMessage(String chatId, String value) {
