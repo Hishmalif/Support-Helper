@@ -11,11 +11,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 @ConfigurationProperties(prefix = "yandex")
 public class YandexConfig {
-    private String apikey;
     private String url;
+    private String apikey;
+    private String ui;
 
     @Bean
     public GeocodeYandex geocodeYandex() {
-        return new GeocodeYandex(apikey, url, WebClient.builder().build());
+        return new GeocodeYandex(ui, url, apikey,  WebClient.builder().build());
     }
 }

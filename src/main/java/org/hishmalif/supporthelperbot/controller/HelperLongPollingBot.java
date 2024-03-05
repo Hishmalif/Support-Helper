@@ -1,21 +1,30 @@
 package org.hishmalif.supporthelperbot.controller;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hishmalif.supporthelperbot.controller.enums.Answers;
+import org.hishmalif.supporthelperbot.data.Answers;
 import org.hishmalif.supporthelperbot.controller.enums.Commands;
 import org.hishmalif.supporthelperbot.service.GeocodeYandex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
+import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Component
-public class HelperLongPollingBot extends TelegramLongPollingBot implements HelperBot {
+public class HelperLongPollingBot extends TelegramLongPollingBot {
     private final String name;
     @Autowired
     public GeocodeYandex geocodeYandex;
@@ -39,23 +48,48 @@ public class HelperLongPollingBot extends TelegramLongPollingBot implements Help
         switch (update.getMessage().getText()) {
             case Commands.START:
                 sendMessage(chatId, Answers.START.getValue());
+                log.info("Для чата " + chatId + " запущена инструкция /start"); //TODO Скорректировать сообщение
                 break;
             case Commands.PARSE:
-                sendMessage(chatId, geocodeYandex.getCoordinates(update.getMessage().getText()));
+                long id = update.getMessage().getChatId();
+
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                InlineKeyboardButton button = new InlineKeyboardButton();
+                button.setText("Нажми меня");
+                button.setCallbackData("button_clicked");
+                rowInline.add(button);
+
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+
+                SendMessage message = new SendMessage();
+                message.setChatId(id);
+                message.setText("Привет! Нажми кнопку ниже:");
+                message.setReplyMarkup(markupInline);
+
+                try {
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
                 break;
             case Commands.GEO:
-                System.out.println(3);
-                break;
+                sendMessage(chatId, geocodeYandex.getGeo(update.getMessage().getText()));
             case Commands.CHAT:
-                System.out.println(4);
+                System.out.println("ChatId: " + chatId);
+                break;
             case Commands.ABOUT:
                 sendMessage(chatId, Answers.ABOUT.getValue());
                 break;
-            default:
-                sendMessage(chatId, geocodeYandex.getCoordinates(update.getMessage().getText()));
-                break;
         }
         System.out.println(update.getMessage().getText());
+    }
+
+    private void getGeo(String chatId) {
+        sendMessage(chatId, "\uD83C\uDF0F Введи координаты или адрес \uD83C\uDF0F");
     }
 
     private void sendMessage(String chatId, String value) {

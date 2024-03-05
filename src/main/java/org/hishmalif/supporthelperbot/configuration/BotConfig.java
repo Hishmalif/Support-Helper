@@ -2,7 +2,6 @@ package org.hishmalif.supporthelperbot.configuration;
 
 import lombok.Data;
 import org.springframework.context.annotation.Bean;
-import org.hishmalif.supporthelperbot.controller.HelperBot;
 import org.springframework.context.annotation.Configuration;
 import org.hishmalif.supporthelperbot.controller.HelperLongPollingBot;
 import org.springframework.boot.context.properties.ConfigurationProperties;

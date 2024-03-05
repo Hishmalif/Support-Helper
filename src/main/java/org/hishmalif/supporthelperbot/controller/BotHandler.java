@@ -1,5 +1,5 @@
 package org.hishmalif.supporthelperbot.controller;
 
-public interface HelperBot {
+public class BotHandler {
 
 }
