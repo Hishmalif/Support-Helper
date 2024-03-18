@@ -44,6 +44,8 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         String chatId = update.getMessage().getChatId().toString();
 
+        System.out.println(update);
+
 
         switch (update.getMessage().getText()) {
             case Commands.START:
