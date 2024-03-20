@@ -2,7 +2,6 @@ package org.hishmalif.supporthelperbot.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
-import org.hishmalif.supporthelperbot.data.exception.GeocodeException;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.hishmalif.supporthelperbot.data.Answers;
@@ -10,6 +9,7 @@ import org.hishmalif.supporthelperbot.data.GeoData;
 import org.springframework.web.util.UriUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.hishmalif.supporthelperbot.data.exception.GeocodeException;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

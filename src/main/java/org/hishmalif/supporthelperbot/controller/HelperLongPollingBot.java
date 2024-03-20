@@ -6,20 +6,15 @@ import org.hishmalif.supporthelperbot.controller.enums.Commands;
 import org.hishmalif.supporthelperbot.service.GeocodeYandex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -28,8 +23,9 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
     private final String name;
     @Autowired
     public GeocodeYandex geocodeYandex;
-
     @Autowired
+    private BotDataHandler botDataHandler;
+
     public HelperLongPollingBot(String name, String token) {
         super(token);
         this.name = name;
@@ -42,10 +38,13 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        String chatId = update.getMessage().getChatId().toString();
+        Message telegramMessage = update.getMessage();
+        String chatId = telegramMessage.getChatId().toString();
+        Long userId = telegramMessage.getFrom().getId();
+        botDataHandler.insertNewUser(telegramMessage.getFrom());
+        Boolean active = botDataHandler.checkActivityUser(telegramMessage.getFrom());
 
-        System.out.println(update);
-
+        System.out.println(active);
 
         switch (update.getMessage().getText()) {
             case Commands.START:
