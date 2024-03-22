@@ -11,9 +11,9 @@ create table if not exists public.users(
     language_code varchar(20),
     is_bot        bool not null default false,
     is_premium    bool not null default false,
-    is_admin      bool not null default false,
-    constraint ix_users_telegramid unique (telegram_id)
+    is_admin      bool not null default false
 );
+create unique index if not exists ix_users_telegramid on public.users(telegram_id) include (active);
 create index if not exists ix_users_login on public.users(login);
 
 -- Create table for blacklist

@@ -20,10 +20,12 @@ public class BotRepository implements BotDataHandler {
     }
 
     @Override
-    public void insertNewUser(User user) {
-        String query = "insert into users (telegram_id, name, login, language_code, is_bot, is_premium) " +
+    public TelegramUser insertNewUser(User user) {
+        String query = "with newUser as" +
+                "(insert into users (telegram_id, name, login, language_code, is_bot, is_premium) " +
                 "select ?, ?, ?, ?, ?, ? " +
-                "where not exists (select 1 from users where telegram_id = ?)";
+                "where not exists (select 1 from users where telegram_id = ?) returning *) " +
+                "select * from newUser";
 
         Object[] params = {
                 user.getId(),
@@ -35,24 +37,31 @@ public class BotRepository implements BotDataHandler {
                 user.getId()
         };
 
-        jdbcTemplate.update(query, params);
-    }
-
-    @Override
-    public Boolean checkActivityUser(User user) {
-        return jdbcTemplate.query("select active from users where telegram_id = ?",
-                        (resultSet, i) -> resultSet.getBoolean("active"), user.getId())
-                .stream()
-                .findFirst()
-                .orElse(Boolean.FALSE);
+        return jdbcTemplate.queryForObject(query, TelegramUser.class, params);
     }
 
     @Override
     public TelegramUser getUser(Long telegramId) {
-        return jdbcTemplate.query("select * from users where telegram_id = ?",
+        return jdbcTemplate.query("with block as ( " +
+                                "select b.user_id, max(b.unlock_date) unblock " +
+                                "from blacklist b " +
+                                "group by b.user_id) " +
+                                "select u.*, " +
+                                "case when u.active = false and b.unblock is null " +
+                                "then now() + interval '5 year' " +
+                                "else b.unblock end " +
+                                "from users u " +
+                                "left join block b on b.user_id = u.id " +
+                                "where u.telegram_id = ?",
                         new BeanPropertyRowMapper<>(TelegramUser.class), telegramId)
                 .stream()
                 .findFirst()
                 .orElseThrow(NoSuchElementException::new);
+    }
+
+    @Override
+    public void insertUsageOperation(Long id, String operation) {
+        jdbcTemplate.update("insert into user_usage (user_id, command)" +
+                "values (?, ?)", id, operation);
     }
 }
