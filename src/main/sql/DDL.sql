@@ -1,5 +1,3 @@
-create schema if not exists metrics;
-
 -- Create table for users
 create table if not exists public.users(
     id            bigserial primary key,
@@ -72,20 +70,11 @@ after insert on public.user_data
 for each row
 execute function encode_user_data_value();
 
--- Create table for enums the metrics
-create table if not exists metrics.commands(
-	id serial primary key,
-	name varchar(100) not null,
-	description text,
-	state bool not null default true
-);
-
 -- Create table for statistics of usage methods in the app
-create table if not exists metrics.user_usage(
+create table if not exists user_usage(
 	user_id bigint references public.users(id),
-	command_id integer references metrics.commands(id),
+	command text,
 	usage_date timestamp with time zone not null default now()
 );
-create index if not exists ix_user_usage_userid on metrics.user_usage(user_id);
-create index if not exists ix_user_usage_commandid on metrics.user_usage(command_id);
-create index if not exists ix_user_usage_usagedate on metrics.user_usage(usage_date);
+create index if not exists ix_user_usage_userid on user_usage(user_id);
+create index if not exists ix_user_usage_usagedate on user_usage(usage_date);

@@ -1,4 +1,4 @@
-package org.hishmalif.supporthelperbot.controller.enums;
+package org.hishmalif.supporthelperbot.data.enums;
 
 import lombok.experimental.UtilityClass;
 

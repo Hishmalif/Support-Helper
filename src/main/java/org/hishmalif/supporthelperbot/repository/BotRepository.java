@@ -61,7 +61,9 @@ public class BotRepository implements BotDataHandler {
 
     @Override
     public void insertUsageOperation(Long id, String operation) {
-        jdbcTemplate.update("insert into user_usage (user_id, command)" +
-                "values (?, ?)", id, operation);
+        jdbcTemplate.update("insert into user_usage(user_id, command_id) " +
+                "select ?, uc.id " +
+                "from user_command uc " +
+                "where uc.active = true and name = ?", id, operation);
     }
 }
