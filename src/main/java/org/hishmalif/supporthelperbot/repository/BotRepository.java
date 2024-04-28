@@ -8,8 +8,6 @@ import org.hishmalif.supporthelperbot.data.TelegramUser;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.hishmalif.supporthelperbot.controller.BotDataHandler;
 
-import java.util.NoSuchElementException;
-
 @Repository
 public class BotRepository implements BotDataHandler {
     private final JdbcTemplate jdbcTemplate;
@@ -25,7 +23,7 @@ public class BotRepository implements BotDataHandler {
                 "(insert into users (telegram_id, name, login, language_code, is_bot, is_premium) " +
                 "select ?, ?, ?, ?, ?, ? " +
                 "where not exists (select 1 from users where telegram_id = ?) returning *) " +
-                "select * from newUser";
+                "select * from newUser"; // Какая то проблема с количеством столбцов если нет lastname
 
         Object[] params = {
                 user.getId(),
@@ -56,14 +54,12 @@ public class BotRepository implements BotDataHandler {
                         new BeanPropertyRowMapper<>(TelegramUser.class), telegramId)
                 .stream()
                 .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .orElse(null);
     }
 
     @Override
     public void insertUsageOperation(Long id, String operation) {
-        jdbcTemplate.update("insert into user_usage(user_id, command_id) " +
-                "select ?, uc.id " +
-                "from user_command uc " +
-                "where uc.active = true and name = ?", id, operation);
+        jdbcTemplate.update("insert into user_usage(user_id, command) " +
+                "values(?, ?)", id, operation);
     }
 }

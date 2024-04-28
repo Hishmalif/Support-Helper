@@ -1,7 +1,6 @@
 package org.hishmalif.supporthelperbot.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hishmalif.supporthelperbot.configuration.telegram.BotProperty;
 import org.hishmalif.supporthelperbot.data.enums.Answers;
 import org.hishmalif.supporthelperbot.data.enums.Commands;
 import org.hishmalif.supporthelperbot.data.TelegramUser;
@@ -13,9 +12,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
@@ -27,16 +26,14 @@ import java.util.Map;
 @Component
 public class HelperLongPollingBot extends TelegramLongPollingBot {
     private final String name;
-    @Autowired
-    private BotHandler botHandler;
-    @Autowired
-    private BotDataHandler dataHandler;
-    private final Map<Long, Answers> userMap = new HashMap<>();
+    private final BotHandler botHandler;
+    private final Map<Long, Answers> userMap; // Переделать на сессии
 
-    @Autowired
-    public HelperLongPollingBot(BotProperty config) {
-        super(config.getToken());
-        this.name = config.getName();
+    public HelperLongPollingBot(String token, String name, BotHandler botHandler) {
+        super(token);
+        this.name = name;
+        this.botHandler = botHandler;
+        userMap = new HashMap<>();
     }
 
     @Override
@@ -52,13 +49,13 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
 
         if (update.hasCallbackQuery()) {
             message = update.getCallbackQuery().getMessage();
-            user = getUser(update.getCallbackQuery().getFrom());
+            user = botHandler.getUser(update.getCallbackQuery().getFrom());
             message.setText(update.getCallbackQuery().getData());
         } else if (update.hasMessage()) {
             message = update.getMessage();
-            user = getUser(message.getFrom());
+            user = botHandler.getUser(message.getFrom());
         } else {
-            throw new BotException();
+            throw new BotException(); // Все равно сделать вставку user'a
         }
         userId = user.getId();
 
@@ -77,13 +74,38 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
                 log.info("UserId: " + userId + " - Send first geo message");
                 sendMessage(message, Answers.GEO_WELCOME.getValue());
                 break;
-            case Commands.PARSE:
-                sendMessage(message, botHandler.parseObject(userId, message));
+            case Commands.ART:
+                final InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                final List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                final List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+                WebAppInfo webAppInfo = new WebAppInfo();
+                webAppInfo.setUrl("https://hishmalif.github.io/PagesForHelperBot/art/");
+                InlineKeyboardButton button = new InlineKeyboardButton();
+                button.setText("App");
+                button.setWebApp(webAppInfo);
+                rowInline.add(button);
+                rowsInline.add(rowInline);
+                markupInline.setKeyboard(rowsInline);
+
+                SendMessage message1 = new SendMessage(message.getChatId().toString(), "Укажите данные:");
+                message1.setReplyMarkup(markupInline);
+                message1.disableWebPagePreview();
+                try {
+                    this.execute(message1);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+
+                sendMessage(message, botHandler.drawSVG(userId, message));
                 break;
             case Commands.CHAT:
                 userMap.put(userId, Answers.GPT_WELCOME);
                 log.info("UserId: " + userId + " - Send first chatGPT message");
                 sendMessage(message, Answers.GPT_WELCOME.getValue());
+                break;
+            case Commands.SQL:
+                sendMessage(message, botHandler.buildSQL(userId, message));
                 break;
             case Commands.ABOUT:
                 sendMessage(message, botHandler.getAbout(userId));
@@ -100,6 +122,11 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
         final List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         final List<InlineKeyboardButton> rowInline = new ArrayList<>();
 
+        if (reply == null) {
+            sendMessage(message, Answers.UNKNOWN_COMMAND.getValue());
+            return;
+        }
+
         if (reply.equals(Answers.GEO_WELCOME)) {
             InlineKeyboardButton button = new InlineKeyboardButton();
             button.setText(Answers.ANSWER_YES.getValue());
@@ -108,14 +135,12 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
             rowsInline.add(rowInline);
             markupInline.setKeyboard(rowsInline);
 
-            sendMessage(message, botHandler.getGeo(userId, message));
+            sendMessage(message, botHandler.getLocation(userId, message.getText()));
             sendReplyMarkup(message, markupInline, Answers.REPLY.getValue());
             userMap.remove(userId);
         } else if (reply.equals(Answers.GPT_WELCOME)) {
             Message sendMessage = sendMessage(message, Answers.GPT_WAIT.getValue());
             editMessage(sendMessage, botHandler.getResponseGPT(userId, message));
-        } else {
-            sendMessage(message, Answers.UNKNOWN_COMMAND.getValue());
         }
     }
 
@@ -155,14 +180,5 @@ public class HelperLongPollingBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-    }
-
-    private TelegramUser getUser(User telegramUser) {
-        TelegramUser user = dataHandler.getUser(telegramUser.getId());
-
-        if (user == null) {
-            user = dataHandler.insertNewUser(telegramUser);
-        }
-        return user;
     }
 }
