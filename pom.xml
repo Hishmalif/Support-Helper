@@ -13,7 +13,6 @@
         <lombok.version>1.18.30</lombok.version>
         <postgresql.version>42.7.2</postgresql.version>
         <telegram.version>6.9.0</telegram.version>
-        <feign.version>13.2.1</feign.version>
     </properties>
 
     <parent>
@@ -47,14 +46,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-            <version>${feign.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-jackson</artifactId>
-            <version>${feign.version}</version>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>${spring.cloud.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

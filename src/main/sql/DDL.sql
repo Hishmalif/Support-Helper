@@ -30,7 +30,7 @@ create table if not exists public.user_data(
 	user_id bigint references users(id),
 	key text not null,
 	value text not null,
-	constraint ix_user_data_userid_key unique (user_id, key)
+	constraint u_user_data_userid_key unique (user_id, key)
 );
 create index if not exists ix_user_data_userid on public.user_data(user_id);
 

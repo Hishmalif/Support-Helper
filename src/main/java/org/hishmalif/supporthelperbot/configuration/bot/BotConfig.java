@@ -1,7 +1,6 @@
-package org.hishmalif.supporthelperbot.configuration;
+package org.hishmalif.supporthelperbot.configuration.bot;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
@@ -11,11 +10,10 @@ import org.hishmalif.supporthelperbot.controller.HelperLongPollingBot;
 
 @Configuration
 public class BotConfig {
+
     @Bean
-    public HelperLongPollingBot helperLongPollingBot(@Value("${telegram.bot.token}") String token,
-                                                     @Value("${telegram.bot.name}") String name,
-                                                     BotHandler botHandler) {
-        return new HelperLongPollingBot(token, name, botHandler);
+    public HelperLongPollingBot helperLongPollingBot(BotProperties properties, BotHandler botHandler) {
+        return new HelperLongPollingBot(properties, botHandler);
     }
 
     /**

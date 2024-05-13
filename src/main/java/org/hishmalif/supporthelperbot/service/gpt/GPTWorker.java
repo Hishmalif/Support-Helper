@@ -1,13 +1,16 @@
 package org.hishmalif.supporthelperbot.service.gpt;
 
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import com.fasterxml.jackson.databind.JsonNode;
-import feign.Headers;
-import feign.Param;
-import feign.RequestLine;
 import org.hishmalif.supporthelperbot.data.gpt.GPTRequest;
 
+import java.util.Map;
+
+@FeignClient(name = "gptWorker", url = "${gpt.bot.url}")
 public interface GPTWorker {
-    @RequestLine("POST /v1/chat/completions")
-    @Headers({"Content-Type: application/json", "Authorization: Bearer {token}"})
-    JsonNode generate(@Param("token") String token, GPTRequest request);
+    @PostMapping("/v1/chat/completions")
+    JsonNode generate(@RequestHeader Map<String, String> headers, @RequestBody GPTRequest request);
 }

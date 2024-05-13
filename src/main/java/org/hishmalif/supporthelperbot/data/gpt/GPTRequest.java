@@ -19,6 +19,6 @@ public class GPTRequest {
         this.model = model;
         messages = new ArrayList<>();
         this.messages.add(new Message(message));
-        this.n = 10;
+        this.n = 3;
     }
 }

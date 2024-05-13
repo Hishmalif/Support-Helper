@@ -10,15 +10,15 @@ import java.text.SimpleDateFormat;
 @NoArgsConstructor
 public class TelegramUser {
     private Long id;
-    private Long telegramId;
+    private Long telegram_id;
     private String name;
     private String login;
     private Boolean active;
-    private Date firstLogin;
-    private String languageCode;
-    private Boolean isBot;
-    private Boolean isPremium;
-    private Boolean isAdmin;
+    private Date first_login;
+    private String language_code;
+    private Boolean is_bot;
+    private Boolean is_premium;
+    private Boolean is_admin;
     private Date unblock;
 
     public String getUnblockDate() {

@@ -1,6 +1,5 @@
 package org.hishmalif.supporthelperbot.service.geocode.yandex;
 
-import lombok.SneakyThrows;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,6 @@ public class GeocodeYandex implements Geocode {
     /**
      * Defining location data from JSON
      */
-    @SneakyThrows
     private GeoData createGeoData(JsonNode json, String uuid) {
         GeoData geo = new GeoData();
         var mainNode = json.findPath("GeoObject");

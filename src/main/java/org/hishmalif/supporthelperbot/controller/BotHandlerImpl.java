@@ -7,11 +7,13 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.hishmalif.supporthelperbot.data.GeoData;
 import org.hishmalif.supporthelperbot.data.TelegramUser;
-import org.hishmalif.supporthelperbot.service.gpt.GPTBot;
 import org.hishmalif.supporthelperbot.data.enums.Answers;
+import org.hishmalif.supporthelperbot.service.gpt.GPTBot;
 import org.hishmalif.supporthelperbot.data.enums.Commands;
+import org.hishmalif.supporthelperbot.service.sql.SQLService;
 import org.hishmalif.supporthelperbot.service.geocode.Geocode;
 
+import java.io.File;
 import java.util.UUID;
 
 @Slf4j
@@ -21,6 +23,7 @@ public class BotHandlerImpl implements BotHandler {
     private final GPTBot gpt;
     private final BotDataHandler dataHandler;
     private final Geocode geocode;
+    private final SQLService sqlService;
 
     @Override
     public String getStart(Long id) {
@@ -66,9 +69,9 @@ public class BotHandlerImpl implements BotHandler {
     }
 
     @Override
-    public String buildSQL(Long id, Message message) {
+    public String buildSQL(Long id, File file) {
         writeResponseLog(id, generateUUID(), Commands.SQL);
-        return "Сервис временно не работает";
+        return sqlService.insertDatabase(file) ? "OK" : "ERROR";
     }
 
     @Override

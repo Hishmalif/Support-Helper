@@ -1,7 +1,7 @@
 package org.hishmalif.supporthelperbot.repository;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.hishmalif.supporthelperbot.data.TelegramUser;
@@ -9,21 +9,19 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.hishmalif.supporthelperbot.controller.BotDataHandler;
 
 @Repository
+@AllArgsConstructor
 public class BotRepository implements BotDataHandler {
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public BotRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Override
     public TelegramUser insertNewUser(User user) {
-        String query = "with newUser as" +
-                "(insert into users (telegram_id, name, login, language_code, is_bot, is_premium) " +
-                "select ?, ?, ?, ?, ?, ? " +
-                "where not exists (select 1 from users where telegram_id = ?) returning *) " +
-                "select * from newUser"; // Какая то проблема с количеством столбцов если нет lastname
+        String query = """
+                with newUser as
+                (insert into users (telegram_id, name, login, language_code, is_bot, is_premium)
+                select ?, ?, ?, ?, ?, ?
+                where not exists (select 1 from users where telegram_id = ?) returning *)
+                select * from newUser
+                """; // Какая то проблема с количеством столбцов если нет lastname
 
         Object[] params = {
                 user.getId(),
